@@ -1,6 +1,5 @@
 const UserModel = require("../models/UserModel");
 const ScheduleModel = require("../models/ScheduleModel");
-const mongoose = require("mongoose");
 const userController = {
   checkUserbyGoogleAuth: async (req, res) => {
     const { email, displayName, photoURL } = req.body;
@@ -65,6 +64,19 @@ const userController = {
       return res.status(200).json({ schedule });
     } catch (error) {
       return res.status(400).json({ success: false });
+    }
+  },
+  getUserListbyEmail: async (req, res) => {
+    const { email } = req.params;
+    try {
+      const users = await UserModel.find({
+        email: { $regex: ".*" + email + ".*" },
+      });
+
+      return res.status(200).json({ success: true, users });
+    } catch (error) {
+      console.log(error);
+      return res.status(400).json({ success: false, error });
     }
   },
 };

@@ -1,5 +1,9 @@
 const router = require("express").Router();
-const scheduleController = require("../controllers/scheduleController");
+const {
+  getSchedulebyUserId,
+  userJointoSchedule,
+} = require("../controllers/scheduleController");
 
-router.get("/:id/:idUser/:year", scheduleController.getSchedulebyUserId);
+router.get("/:id/:idUser/:year", getSchedulebyUserId);
+router.post("/join-schedule", userJointoSchedule);
 module.exports = router;

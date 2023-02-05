@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
+const socket = require("./config/socket");
 const userRouter = require("./routes/userRouter");
 const app = express();
 
@@ -20,7 +21,7 @@ const authorizationJWT = async (req, res, next) => {
   next();
 };
 
-app.use(logger("dev"));
+// app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -28,23 +29,7 @@ app.use(cors());
 app.options("*", cors());
 const server = http.createServer(app);
 routerConfig(app);
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["POST", "GET", "DELETE", "PUT"],
-  },
-});
-
-io.on("connection", (socket) => {
-  console.log(`${socket.id} connect`);
-  socket.on("join-schedule", (room) => {
-    socket.join(room);
-    console.log(`User ${socket.id} join to ${room}`);
-  });
-  socket.on("disconnect", () => {
-    console.log(`User ${socket.id} is disconnect`);
-  });
-});
+socket(server);
 
 server.listen(PORT, () => {
   console.log(`Example app listening at http://localhost:${PORT}`);

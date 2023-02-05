@@ -10,18 +10,43 @@ const scheduleSchema = mongoose.Schema({
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Event",
   },
-  view: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "User",
-  },
-  edit: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "User",
-  },
-  addUser: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "User",
-  },
+  view: [
+    {
+      idUser: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      accept: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  ],
+
+  edit: [
+    {
+      idUser: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      accept: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  ],
+  addUser: [
+    {
+      idUser: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      accept: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  ],
 });
 const ScheduleModel = mongoose.model("Schedule", scheduleSchema);
 module.exports = ScheduleModel;

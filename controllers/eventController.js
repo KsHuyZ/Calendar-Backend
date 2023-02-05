@@ -2,7 +2,7 @@ const EventModel = require("../models/EventModel");
 const ScheduleModel = require("../models/ScheduleModel");
 
 const eventController = {
-  createEvent: async (req, res) => {
+  createEvent: async (event) => {
     const {
       title,
       idSchedule,
@@ -11,7 +11,7 @@ const eventController = {
       start,
       end,
       createdBy,
-    } = req.body;
+    } = event;
 
     try {
       const event = new EventModel({
@@ -25,33 +25,38 @@ const eventController = {
       });
 
       await event.save();
+      const eventPopulate = await EventModel.populate(event, {
+        path: "createdBy",
+      });
       const schedule = await ScheduleModel.findById(idSchedule);
       schedule.idEvent.push(event._id);
       await schedule.save();
-      return res.status(200).json({ success: true, id: event._id });
+      return { success: true, event: eventPopulate };
     } catch (error) {
-      return res.status(400).json({ success: false, error });
+      console.log(error);
+      return { success: false, error };
     }
   },
-  updateTimeEvent: async (req, res) => {
-    const { _id, start, end } = req.body;
+  updateTimeEvent: async (id, start, end) => {
     try {
-      const event = await EventModel.findById(_id);
+      const event = await EventModel.findById(id);
       event.start = start;
       event.end = end;
       await event.save();
-      return res.status(200).json({ success: true });
+      return { success: true };
     } catch (error) {
-      return res.status(400).json({ success: false, error });
+      return { success: false, error };
     }
   },
-  deleteEvent: async (req, res) => {
-    const { id } = req.params;
+  deleteEvent: async (id, idSchedule) => {
     try {
-      await EventModel.findByIdAndDelete(id);
-      return res.status(200).json({ success: true });
+      const event = await EventModel.findByIdAndDelete(id);
+      const schedule = await ScheduleModel.findById(idSchedule);
+      schedule.idEvent.pop(event._id);
+      await schedule.save();
+      return { success: true };
     } catch (error) {
-      return res.status(400).json({ success: false });
+      return { success: false };
     }
   },
 };
