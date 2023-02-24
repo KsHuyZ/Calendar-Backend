@@ -6,9 +6,7 @@ const routerConfig = require("./config/router");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const http = require("http");
-const { Server } = require("socket.io");
 const socket = require("./config/socket");
-const userRouter = require("./routes/userRouter");
 const app = express();
 
 const DB = process.env.DB;

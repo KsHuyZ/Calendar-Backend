@@ -17,6 +17,15 @@ const eventSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  isHoliday: {
+    type: Boolean,
+    default: false,
+  },
+  location: {
+    type: mongoose.SchemaTypes.ObjectId,
+    // required: false,
+    ref: "Location",
+  },
   start: {
     type: Date,
     required: true,

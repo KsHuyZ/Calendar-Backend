@@ -9,7 +9,6 @@ const notifySchema = mongoose.Schema(
     },
     idSchedule: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
     },
     idUserSend: {
       type: mongoose.Schema.Types.ObjectId,
@@ -24,11 +23,15 @@ const notifySchema = mongoose.Schema(
     //   1: normal
     type: {
       type: Number,
-      required: true,
+      default: 1,
     },
     // exist if type = 0
-    linkType: {
-      type: String,
+    // 0 no action
+    // 1 accept
+    // 2 denied
+    accept: {
+      type: Number,
+      default: 0,
     },
     seen: {
       type: Boolean,

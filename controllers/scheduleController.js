@@ -1,9 +1,13 @@
 const ScheduleModel = require("../models/ScheduleModel");
-const { createAceptNotify } = require("../controllers/notifyController");
+const {
+  createAceptNotify,
+  getNotifybyIdAndAccept,
+} = require("../controllers/notifyController");
 const UserModel = require("../models/UserModel");
 const scheduleController = {
   getSchedulebyUserId: async (req, res) => {
     const { id, idUser, year } = req.params;
+
     const currentYear = Number(year);
     try {
       const schedules = await ScheduleModel.findOne({
@@ -13,10 +17,8 @@ const scheduleController = {
             idOwner: idUser,
           },
           {
-            view: {
-              idUser,
-              accept: true,
-            },
+            "view.idUser": idUser,
+            "view.accept": true,
           },
         ],
       }).populate({
@@ -27,7 +29,7 @@ const scheduleController = {
             $lte: `${currentYear}-12-31`,
           },
         },
-        populate: { path: "createdBy" },
+        populate: { path: "createdBy location" },
       });
 
       return res.status(200).json({ success: true, events: schedules.idEvent });
@@ -36,6 +38,20 @@ const scheduleController = {
       return res.status(400).json({ success: false, error });
     }
   },
+
+  getSchedulebyUserandSchedule: async (idUser, idSchedule) => {
+    try {
+      const schedule = ScheduleModel.findOne({
+        _id: idSchedule,
+        "view.idUser": idUser,
+        "view.accept": true,
+      });
+      return schedule;
+    } catch (error) {
+      return null;
+    }
+  },
+
   userJointoSchedule: async (users, idSchedule, user, permissions) => {
     try {
       const schedule = await ScheduleModel.findOne({
@@ -63,16 +79,8 @@ const scheduleController = {
       const msg = `${
         u.displayName
       } invited you to ${handleCheckMsg()} schedule`;
-      const api = `/schedules/accept/${idSchedule}`;
 
-      const notifies = await createAceptNotify(
-        users,
-        idSchedule,
-        user,
-        msg,
-        0,
-        api
-      );
+      const notifies = await createAceptNotify(users, idSchedule, user, msg, 0);
 
       if (permissions.view) {
         users.map(
@@ -107,29 +115,48 @@ const scheduleController = {
       return { success: false };
     }
   },
-  acceptJointoSchedule: async (req, res) => {
-    const { idUser } = req.body;
-    const { id: idSchedule } = req.params;
-    const schedule = await ScheduleModel.findOne({
-      _id: idSchedule,
-      "view.idUser": idUser,
-      "view.accept": false,
-    });
-    let scheduleEdit = schedule.edit;
-    const indexEdit = scheduleEdit.findIndex((user) => user._id === idUser);
-    if (indexEdit > -1) {
-      scheduleEdit[indexEdit].accept = true;
-      schedule.edit === scheduleEdit;
-    }
+  acceptJointoSchedule: async ({ idUser, idSchedule, idNotify }) => {
+    try {
+      const schedule = await ScheduleModel.findOne({
+        _id: idSchedule,
+        "view.idUser": idUser,
+      });
 
-    let scheduleaddUser = schedule.addUser;
-    const indexAddUser = scheduleaddUser.findIndex(
-      (user) => user._id === idUser
-    );
-    if (indexAddUser > -1) {
-      scheduleaddUser[indexAddUser].accept = true;
-      schedule.addUser = scheduleaddUser;
+      let scheduleView = schedule.view;
+      const indexView = scheduleView.findIndex(
+        (user) => user.idUser.toString() === idUser
+      );
+
+      if (indexView > -1) {
+        scheduleView[indexView].accept = true;
+        schedule.view === scheduleView;
+      }
+
+      let scheduleEdit = schedule.edit;
+      const indexEdit = scheduleEdit.findIndex((user) => user._id === idUser);
+      if (indexEdit > -1) {
+        scheduleEdit[indexEdit].accept = true;
+        schedule.edit === scheduleEdit;
+      }
+
+      let scheduleaddUser = schedule.addUser;
+      const indexAddUser = scheduleaddUser.findIndex(
+        (user) => user._id === idUser
+      );
+      if (indexAddUser > -1) {
+        scheduleaddUser[indexAddUser].accept = true;
+        schedule.addUser = scheduleaddUser;
+      }
+      const success = await getNotifybyIdAndAccept(idNotify);
+      const user = await UserModel.findById(idUser);
+      user.schedules.push(idSchedule);
+      await schedule.save();
+      await user.save();
+      if (success) return true;
+    } catch (error) {
+      return null;
     }
   },
+  deniedJointoSchedule: async (id) => {},
 };
 module.exports = scheduleController;

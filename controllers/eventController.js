@@ -1,5 +1,6 @@
 const EventModel = require("../models/EventModel");
 const ScheduleModel = require("../models/ScheduleModel");
+const { createLocation } = require("./locationController");
 
 const eventController = {
   createEvent: async (event) => {
@@ -10,10 +11,14 @@ const eventController = {
       description,
       start,
       end,
+      location,
       createdBy,
     } = event;
 
     try {
+      const { address, latitude, longitude } = location;
+      const locaId = await createLocation(location);
+
       const event = new EventModel({
         title,
         idSchedule,
@@ -21,6 +26,7 @@ const eventController = {
         description,
         start,
         end,
+        location: locaId,
         createdBy,
       });
 

@@ -1,6 +1,7 @@
 const { Server } = require("socket.io");
 const scheduleSocket = require("../socket/scheduleSocket");
 const { removeUser } = require("../data/users");
+const notifySocket = require("../socket/notifySocket");
 const socket = (server) => {
   const io = new Server(server, {
     cors: {
@@ -16,10 +17,10 @@ const socket = (server) => {
     });
 
     scheduleSocket(socket, io);
-
+    notifySocket(socket, io);
     socket.on("disconnect", () => {
       removeUser(socket.id);
-      console.log(`User ${socket.id} is disconnect`);
+      console.log(`User ${socket.displayName} is disconnect`);
     });
   });
 };
