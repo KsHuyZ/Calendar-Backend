@@ -5,7 +5,7 @@ const notifySocket = require("../socket/notifySocket");
 const socket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: "https://calendar-backend-1ck8.vercel.app/",
       methods: ["POST", "GET", "DELETE", "PUT"],
     },
   });
