@@ -1,9 +1,15 @@
 const router = require("express").Router();
-const eventController = require("../controllers/eventController");
-
-const { createEvent, updateTimeEvent, deleteEvent } = eventController;
+const {
+  getEventbyId,
+  createEvent,
+  updateTimeEvent,
+  deleteEvent,
+  userJointoEvent,
+} = require("../controllers/eventController");
 
 router.post("/create-event", createEvent);
 router.post("/update-time-event", updateTimeEvent);
+router.post("/:id", userJointoEvent);
 router.delete("/:id", deleteEvent);
+router.get("/:id", getEventbyId);
 module.exports = router;

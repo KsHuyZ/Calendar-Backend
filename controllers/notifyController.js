@@ -1,4 +1,5 @@
 const notifyModel = require("../models/NotifyModel");
+const UserModel = require("../models/UserModel");
 
 const notifyController = {
   createAceptNotify: async (idUsers, idSchedule, idUserSend, msg, type) => {
@@ -43,15 +44,30 @@ const notifyController = {
     }
   },
 
-  createNotifyInvitedJoinEvent : async (idUserSend, idUser, event,msg) => {
+  createNotifyInvitedJoinEvent: async (idUserSend, idUser, idEvent) => {
     try {
+      const u = await UserModel.findOne({ _id: idUser }, "displayName -_id");
+
+      const msg = `${u.displayName} invited you to join this event`;
+
       const notify = new notifyModel({
         idUser,
         idUserSend,
         msg,
+        idEvent,
+        type: 0
       });
+
+      await notify.save();
+
+      const notifyPopulate = await notifyModel
+        .findById(notify._id)
+        .populate("idUserSend");
+
+      return notifyPopulate;
     } catch (error) {
-      
+      console.log(error);
+      return null;
     }
   },
 
@@ -102,7 +118,6 @@ const notifyController = {
       return null;
     }
   },
-  
 };
 
 module.exports = notifyController;

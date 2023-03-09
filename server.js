@@ -3,13 +3,12 @@ const logger = require("morgan");
 require("dotenv/config");
 require("./config/firebaseConfig.js");
 const routerConfig = require("./config/router");
-const mongoose = require("mongoose");
+const dbConnect = require("./config/dbConnect");
 const cors = require("cors");
 const http = require("http");
 const socket = require("./config/socket");
 const app = express();
 
-const DB = process.env.DB;
 const PORT = process.env.PORT || 4000;
 
 // view engine setup
@@ -32,13 +31,4 @@ socket(server);
 server.listen(PORT, () => {
   console.log(`Example app listening at http://localhost:${PORT}`);
 });
-mongoose.set("strictQuery", false);
-// mongoose.set("strictPopulate", false);
-mongoose
-  .connect(DB, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(async () => {
-    console.log("Connect to mongodb");
-  });
+dbConnect();

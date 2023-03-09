@@ -29,7 +29,7 @@ const scheduleController = {
             $lte: `${currentYear}-12-31`,
           },
         },
-        populate: { path: "createdBy location" },
+        populate: { path: "createdBy location userJoin" },
       });
 
       return res.status(200).json({ success: true, events: schedules.idEvent });

@@ -4,29 +4,43 @@ const {
   updateTimeEvent,
 } = require("../controllers/eventController");
 
-const { addUser, getUser, getUsersInRoom } = require("../data/users");
+const {
+  addUser,
+  getUser,
+  getUsersInRoom,
+  getUserInRoom,
+} = require("../data/users");
 
 const {
   userJointoSchedule,
   acceptJointoSchedule,
 } = require("../controllers/scheduleController");
 
-const { getNotifybyIdAndSeen } = require("../controllers/notifyController");
+const {
+  getNotifybyIdAndSeen,
+  createNotifyInvitedJoinEvent,
+} = require("../controllers/notifyController");
 
 const scheduleSocket = (socket, io) => {
   socket.on("join-schedule", (room) => {
     socket.join(room);
 
     console.log(`User ${socket.displayName} join to ${room}`);
-
-    if (socket.displayName) {
+    const u = getUserInRoom(socket._id, room);
+    console.log(u.length);
+    if (u.length === 0) {
       const { error, user } = addUser({
         id: socket.id,
         _id: socket._id,
         displayName: socket.displayName,
+        photoURL: socket.photoURL,
         room,
       });
+      const users = getUsersInRoom(room);
+      io.to(room).emit("new-user-join", users);
     }
+
+    // socket.emit("new-user-join", user);
 
     socket.on("create-event", async (event) => {
       const res = await createEvent(event);
@@ -85,7 +99,24 @@ const scheduleSocket = (socket, io) => {
         .catch((err) => console.log(err));
     });
 
-    socket.on("attend-event", ({ users, event }) => {});
+    socket.on("attend-event", ({ users, event }) => {
+      users.map(async (user) => {
+        const notify = await createNotifyInvitedJoinEvent(
+          socket._id,
+          user,
+          event
+        );
+        const us = getUser(notify.idUser.toString());
+        if (us) {
+          io.sockets
+            .to(us.id)
+            .emit("new-notify", notify, function (err, success) {
+              console.log(err);
+              console.log(success);
+            });
+        }
+      });
+    });
   });
 };
 module.exports = scheduleSocket;

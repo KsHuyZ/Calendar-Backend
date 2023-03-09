@@ -33,6 +33,10 @@ const notifySchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
+    idEvent: {
+      type:  mongoose.Schema.Types.ObjectId,
+      ref:"Event"
+    },
     seen: {
       type: Boolean,
       default: false,

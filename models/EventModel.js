@@ -23,7 +23,6 @@ const eventSchema = mongoose.Schema({
   },
   location: {
     type: mongoose.SchemaTypes.ObjectId,
-    // required: false,
     ref: "Location",
   },
   start: {
@@ -37,6 +36,10 @@ const eventSchema = mongoose.Schema({
   createdBy: {
     type: mongoose.SchemaTypes.ObjectId,
     required: true,
+    ref: "User",
+  },
+  userJoin: {
+    type: [mongoose.SchemaTypes.ObjectId],
     ref: "User",
   },
 });
