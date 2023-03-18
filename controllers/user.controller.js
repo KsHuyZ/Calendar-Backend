@@ -1,40 +1,31 @@
-const UserModel = require("../models/UserModel");
-const ScheduleModel = require("../models/ScheduleModel");
+const User = require("../models/user.model");
+const Calendar = require("../models/calendar.model");
+const CalendarUsers = require("../models/calendarUser.model");
 const userController = {
   checkUserbyGoogleAuth: async (req, res) => {
-    const { email, displayName, photoURL } = req.body;
+    const { uid, email, displayName, photoURL } = req.body;
     try {
-      const foundUser = await UserModel.findOne({ email });
+      const foundUser = await User.findOne({ email });
       if (!foundUser) {
-        const newUser = new UserModel({
+        const newUser = new User({
+          uid,
           email,
-          displayName,
+          userName: displayName,
           photoURL,
-          schedules: [],
         });
-
-        const schedule = new ScheduleModel({
-          idOwner: newUser._id,
-          idEvent: [],
-          view: [],
-          edit: [],
-          addUser: [],
-        });
-        newUser.schedules.push(schedule._id);
         await newUser.save();
-        await schedule.save();
-        return res.status(200).json({ success: true });
+        return res.status(200).json({ success: true, user: newUser });
       }
-      return res.status(200).json({ success: true });
+      return res.status(200).json({ success: true, user: foundUser });
     } catch (error) {
       console.log(error);
       return res.status(400).json({ success: false, msg: "Login failed" });
     }
   },
-  getUserbyEmail: async (req, res) => {
-    const { email } = req.params;
+  getUserbyUid: async (req, res) => {
+    const { uid } = req.params;
     try {
-      const user = await UserModel.findOne({ email });
+      const user = await User.findOne({ uid });
       if (!user) {
         return res.status(200).json({ success: false, msg: "User not exist!" });
       }
@@ -47,30 +38,38 @@ const userController = {
   getUserbyId: async (req, res) => {
     const { id } = req.params;
     try {
-      const user = await UserModel.findById(id, "displayName -_id");
+      const user = await User.findById(id, "userName -_id");
       return res.status(200).json({ user });
     } catch (error) {
       return res.status(400).json({ error });
     }
   },
-  getSchedulebyUserId: async (req, res) => {
+  getCalendarbyUserId: async (req, res) => {
     const { id } = req.params;
     try {
-      const schedule = await UserModel.findById(id).populate({
-        path: "schedules",
-        populate: { path: "idOwner" },
+      const calendar = await Calendar.find({
+        _id: {
+          $in: await CalendarUsers.find({ userId: id, canView: true }).distinct(
+            "calendarId"
+          ),
+        },
+        $or: [
+          {
+            ownerId: id,
+          },
+        ],
       });
 
-      return res.status(200).json({ schedule });
+      return res.status(200).json({ success: true, calendar });
     } catch (error) {
+      console.log(error);
       return res.status(400).json({ success: false });
     }
   },
- 
   getUserListbyEmail: async (req, res) => {
     const { email } = req.params;
     try {
-      const users = await UserModel.find({
+      const users = await User.find({
         email: { $regex: ".*" + email + ".*" },
       });
 

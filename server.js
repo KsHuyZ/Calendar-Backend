@@ -13,11 +13,6 @@ const PORT = process.env.PORT || 4000;
 
 // view engine setup
 
-const authorizationJWT = async (req, res, next) => {
-  console.log({ authorization: req.header.authorization });
-  next();
-};
-
 // app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -32,3 +27,6 @@ server.listen(PORT, () => {
   console.log(`Example app listening at http://localhost:${PORT}`);
 });
 dbConnect();
+
+
+

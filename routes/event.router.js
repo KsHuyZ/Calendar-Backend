@@ -5,7 +5,7 @@ const {
   updateTimeEvent,
   deleteEvent,
   userJointoEvent,
-} = require("../controllers/eventController");
+} = require("../controllers/event.controller");
 
 router.post("/create-event", createEvent);
 router.post("/update-time-event", updateTimeEvent);

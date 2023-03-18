@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
 
 const userSchema = mongoose.Schema({
-
-  displayName: {
+  uid: {
+    type: String,
+  },
+  userName: {
     type: String,
     required: true,
   },
@@ -17,10 +19,6 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  schedules: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref:"Schedule"
-  }
 });
 const UserModel = mongoose.model("User", userSchema);
 module.exports = UserModel;

@@ -1,19 +1,43 @@
 const { Server } = require("socket.io");
-const scheduleSocket = require("../socket/scheduleSocket");
+const scheduleSocket = require("../socket/calendarSocket");
 const { removeUser, getUser, getUsersInRoom } = require("../data/users");
 const notifySocket = require("../socket/notifySocket");
+const { getAuth } = require("firebase-admin/auth");
 const socket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: "https://calendar-backend-1ck8.vercel.app/",
+      origin: "http://localhost:3000",
       methods: ["POST", "GET", "DELETE", "PUT"],
     },
   });
 
   io.on("connection", (socket) => {
-    socket.on("create-user", ({ id, displayName, photoURL }) => {
+    socket.auth = false;
+    socket.on("authenticate", function (data) {
+      // check data được send tới client
+      // console.log(data);
+      getAuth()
+        .verifyIdToken(data.token)
+        .then((decodedToken) => {
+          // console.log(decodedToken);
+          socket.auth = true;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    });
+
+    // setTimeout(function () {
+    //   //sau 1s mà client vẫn chưa dc auth, lúc đấy chúng ta mới disconnect.
+    //   if (!socket.auth) {
+    //     console.log("Disconnecting socket ", socket.id);
+    //     socket.disconnect("unauthorized");
+    //   }
+    // }, 1000);
+
+    socket.once("create-user", ({ id, userName, photoURL }) => {
       socket._id = id;
-      socket.displayName = displayName;
+      socket.userName = userName;
       socket.photoURL = photoURL;
     });
 
@@ -24,9 +48,8 @@ const socket = (server) => {
       if (user) {
         removeUser(socket.id);
         const users = getUsersInRoom(user.room);
-        console.log(users);
         io.to(user.room).emit("new-user-join", users);
-        console.log(`User ${socket.displayName} is disconnect`);
+        console.log(`User ${socket.userName} is disconnect`);
       }
     });
   });

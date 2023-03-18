@@ -2,7 +2,7 @@ const {
   createEvent,
   deleteEvent,
   updateTimeEvent,
-} = require("../controllers/eventController");
+} = require("../controllers/event.controller");
 
 const {
   addUser,
@@ -22,29 +22,55 @@ const {
 } = require("../controllers/notifyController");
 
 const scheduleSocket = (socket, io) => {
-  socket.on("join-schedule", (room) => {
-    socket.join(room);
-
-    console.log(`User ${socket.displayName} join to ${room}`);
-    const u = getUserInRoom(socket._id, room);
-    console.log(u.length);
-    if (u.length === 0) {
-      const { error, user } = addUser({
-        id: socket.id,
-        _id: socket._id,
-        displayName: socket.displayName,
-        photoURL: socket.photoURL,
-        room,
-      });
-      const users = getUsersInRoom(room);
-      io.to(room).emit("new-user-join", users);
+  let count = 0;
+  socket.once("join-schedule", (room) => {
+    console.log("join-schedule", count++);
+    let rooms = [];
+    for (const room of socket.rooms) {
+      rooms.push(room);
+    }
+    if (!rooms.includes(room)) {
+      socket.join(room);
+      console.log(`User ${socket.userName} join to ${room}`);
+      const u = getUserInRoom(socket._id, room);
+      console.log(u.length);
+      if (u.length === 0) {
+        const { error, user } = addUser({
+          id: socket.id,
+          _id: socket._id,
+          displayName: socket.userName,
+          photoURL: socket.photoURL,
+          room,
+        });
+        const users = getUsersInRoom(room);
+        io.to(room).emit("new-user-join", users);
+      }
     }
 
-    // socket.emit("new-user-join", user);
-
-    socket.on("create-event", async (event) => {
+    socket.on("create-event", async (data) => {
+      const {
+        title,
+        backgroundColor,
+        description,
+        start,
+        end,
+        location,
+        calendarId,
+      } = data;
+      const event = {
+        title,
+        backgroundColor,
+        description,
+        start,
+        end,
+        location,
+        calendarId,
+        createdBy: socket._id,
+      };
+      console.log("create-event-commmmme", socket.id);
       const res = await createEvent(event);
       if (res.success) {
+        console.log("time for firedddd", socket.id);
         socket.emit("create-success", res.event);
         socket.broadcast.to(room).emit("new-event", res.event);
       } else {
@@ -52,9 +78,9 @@ const scheduleSocket = (socket, io) => {
       }
     });
 
-    socket.on("delete-event", async ({ idEvent, idSchedule }) => {
+    socket.on("delete-event", async ({ idEvent }) => {
       try {
-        const res = await deleteEvent(idEvent, idSchedule);
+        const res = await deleteEvent(idEvent);
         socket.emit("delete-success", idEvent);
         socket.broadcast.to(room).emit("remove-event", idEvent);
       } catch (error) {

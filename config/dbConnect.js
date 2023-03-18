@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
 const dbConnect = () => {
-  const DB =
-    "mongodb+srv://kshuyz:kshuyz0055@cluster0.qd1uf.mongodb.net/Schedule?retryWrites=true&w=majority";
+  const DB = process.env.DB;
   mongoose.set("strictQuery", false);
-  // mongoose.set("strictPopulate", false);
+
   mongoose
     .connect(DB, {
       useNewUrlParser: true,

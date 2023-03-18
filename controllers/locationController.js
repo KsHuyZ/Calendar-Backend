@@ -1,7 +1,7 @@
-const LocationModel = require("../models/LocationModel");
+const LocationModel = require("../models/location.model");
 
 const locationController = {
-  createLocation: async ({address, latitude, longitude}) => {
+  createLocation: async ({ address, latitude, longitude }) => {
     try {
       const location = new LocationModel({
         address,

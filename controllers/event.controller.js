@@ -1,13 +1,12 @@
-const EventModel = require("../models/EventModel");
-const NotifyModel = require("../models/NotifyModel");
-const ScheduleModel = require("../models/ScheduleModel");
+const EventModel = require("../models/event.model");
+const LocationModel = require("../models/location.model");
 const { createLocation } = require("./locationController");
 
 const eventController = {
   createEvent: async (event) => {
     const {
       title,
-      idSchedule,
+      calendarId,
       backgroundColor,
       description,
       start,
@@ -18,11 +17,12 @@ const eventController = {
 
     try {
       const { address, latitude, longitude } = location;
+
       const locaId = await createLocation(location);
 
       const event = new EventModel({
         title,
-        idSchedule,
+        calendarId,
         backgroundColor,
         description,
         start,
@@ -35,9 +35,6 @@ const eventController = {
       const eventPopulate = await EventModel.populate(event, {
         path: "createdBy location",
       });
-      const schedule = await ScheduleModel.findById(idSchedule);
-      schedule.idEvent.push(event._id);
-      await schedule.save();
       return { success: true, event: eventPopulate };
     } catch (error) {
       console.log(error);
@@ -69,12 +66,10 @@ const eventController = {
       return { success: false, error };
     }
   },
-  deleteEvent: async (id, idSchedule) => {
+  deleteEvent: async (id) => {
     try {
       const event = await EventModel.findByIdAndDelete(id);
-      const schedule = await ScheduleModel.findById(idSchedule);
-      schedule.idEvent.pop(event._id);
-      await schedule.save();
+      const location = await LocationModel.findByIdAndDelete(event.location);
       return { success: true };
     } catch (error) {
       return { success: false };
