@@ -48,14 +48,17 @@ const userController = {
     const { id } = req.params;
     try {
       const calendar = await Calendar.find({
-        _id: {
-          $in: await CalendarUsers.find({ userId: id, canView: true }).distinct(
-            "calendarId"
-          ),
-        },
         $or: [
           {
             ownerId: id,
+          },
+          {
+            _id: {
+              $in: await CalendarUsers.find({
+                userId: id,
+                accepted: true,
+              }).distinct("calendarId"),
+            },
           },
         ],
       });

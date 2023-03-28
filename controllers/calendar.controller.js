@@ -12,15 +12,15 @@ const calendarController = {
         photoCalendar,
         ownerId,
       });
-      const calendarUser = new calendarUserModel({
-        userId: ownerId,
-        calendarId: calendar._id,
-        canView: true,
-        canEdit: true,
-        canShare: true,
-      });
+      // const calendarUser = new calendarUserModel({
+      //   userId: ownerId,
+      //   calendarId: calendar._id,
+      //   canView: true,
+      //   canEdit: true,
+      //   canShare: true,
+      // });
       await calendar.save();
-      await calendarUser.save();
+      // await calendarUser.save();
       return res.status(200).json({ success: true, calendar });
     } catch (error) {
       console.log(error);

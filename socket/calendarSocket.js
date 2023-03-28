@@ -20,10 +20,44 @@ const {
   getNotifybyIdAndSeen,
   createNotifyInvitedJoinEvent,
 } = require("../controllers/notifyController");
+const InvitationModel = require("../models/invitation.model");
+const invitationController = require("../controllers/invitation.controller");
+const calendarUserController = require("../controllers/calendarUser.controller");
 
 const scheduleSocket = (socket, io) => {
   let count = 0;
+
   socket.once("join-schedule", (room) => {
+    const handleListenInvited = async (
+      userId,
+      calendarId,
+      canView,
+      canEdit,
+      canShare,
+      accepted
+    ) => {
+      try {
+        console.log(socket._id);
+        const invitation = await invitationController.createInvitation({
+          calendarId: room,
+          senderId: socket._id,
+          receiverId: userId,
+        });
+        await calendarUserController.createCalendarUser(
+          userId,
+          calendarId,
+          canView,
+          canEdit,
+          canShare,
+          accepted
+        );
+        return invitation;
+      } catch (error) {
+        console.log("error", error);
+        return false;
+      }
+    };
+
     console.log("join-schedule", count++);
     let rooms = [];
     for (const room of socket.rooms) {
@@ -101,28 +135,35 @@ const scheduleSocket = (socket, io) => {
     });
 
     socket.on("invite-join", async ({ users, permissions }) => {
-      const notifies = await userJointoSchedule(
-        users,
-        room,
-        socket._id,
-        permissions
-      );
-
-      Promise.all(notifies)
-        .then(function (results) {
-          results.map((notify) => {
-            const user = getUser(notify.idUser.toString());
-            if (user) {
-              io.sockets
-                .to(user.id)
-                .emit("new-notify", notify, function (err, success) {
-                  console.log(err);
-                  console.log(success);
-                });
-            }
-          });
-        })
-        .catch((err) => console.log(err));
+      const canView = permissions.view;
+      const canEdit = permissions.update;
+      const canShare = permissions.share;
+      users.map(async (user) => {
+        try {
+          const invitation = await handleListenInvited(
+            user,
+            room,
+            canView,
+            canEdit,
+            canShare,
+            false
+          );
+          console.log("invitation", invitation);
+          console.log("user", user);
+          const userOnline = getUser(user);
+          console.log("userOnline", userOnline);
+          if (userOnline) {
+            io.sockets
+              .to(userOnline.id)
+              .emit("new-notify", invitation, function (err, success) {
+                console.log(err);
+                console.log(success);
+              });
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
     });
 
     socket.on("attend-event", ({ users, event }) => {

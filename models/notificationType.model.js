@@ -6,3 +6,8 @@ const notificationTypeSchema = mongoose.Schema({
     required: true,
   },
 });
+const NotificationTypeModel = mongoose.model(
+  "notificationType",
+  notificationTypeSchema
+);
+module.exports = NotificationTypeModel;

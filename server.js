@@ -13,7 +13,6 @@ const PORT = process.env.PORT || 4000;
 
 // view engine setup
 
-// app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -27,6 +26,3 @@ server.listen(PORT, () => {
   console.log(`Example app listening at http://localhost:${PORT}`);
 });
 dbConnect();
-
-
-

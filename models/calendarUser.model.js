@@ -24,6 +24,10 @@ const calendarUserSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    accepted: {
+      type: Boolean,
+      default: false,
+    }
   },
   {
     timestamps: {
