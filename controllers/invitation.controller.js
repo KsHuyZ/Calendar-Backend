@@ -1,18 +1,27 @@
 const calendarModel = require("../models/calendar.model");
+const EventModel = require("../models/event.model");
 const InvitationModel = require("../models/invitation.model");
 const UserModel = require("../models/user.model");
 
 const invitationController = {
   createInvitation: async (data) => {
-    const { calendarId, senderId, receiverId } = data;
+    const { calendarId, senderId, eventId, receiverId } = data;
     const user = await UserModel.findById(senderId);
-    const owner = await calendarModel.findById(calendarId);
+
+    if (calendarId) {
+      const owner = await calendarModel.findById(calendarId);
+    } else {
+      const owner = await EventModel.findById(eventId);
+    }
     const handleCheckMsg = () => {
-      return user._id.toString() === owner.ownerId.toString()
+      return user._id.toString() ===
+        (calendarId ? owner.ownerId.toString() : owner.createdBy.toString())
         ? "their"
         : `${user.userName}'s`;
     };
-    const msg = `${user.userName} invited you to ${handleCheckMsg()} calendar`;
+    const msg = `${user.userName} invited you to ${handleCheckMsg()} ${
+      calendarId ? "calendar" : "event"
+    }`;
 
     const newData = { ...data, msg };
 
@@ -96,6 +105,29 @@ const invitationController = {
     } catch (error) {
       console.log(error);
       return res.status(400).json({ success: false });
+    }
+  },
+  createInvitationJoinEvent: async (data) => {
+    const { eventId, senderId, receiverId } = data;
+    const user = await UserModel.findById(senderId);
+    const owner = await EventModel.findById(eventId);
+    const handleCheckMsg = () => {
+      return user._id.toString() === owner.createdBy.toString()
+        ? "their"
+        : `${user.userName}'s`;
+    };
+    const msg = `${user.userName} invited you to ${handleCheckMsg()} event`;
+    const newData = { ...data, msg };
+    try {
+      const invitation = InvitationModel(newData);
+      await invitation.save();
+      const invitationPopulate = await InvitationModel.findById(
+        invitation._id
+      ).populate("senderId");
+      return invitationPopulate;
+    } catch (error) {
+      console.log(error);
+      return null;
     }
   },
 };

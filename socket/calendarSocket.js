@@ -23,6 +23,9 @@ const {
 const InvitationModel = require("../models/invitation.model");
 const invitationController = require("../controllers/invitation.controller");
 const calendarUserController = require("../controllers/calendarUser.controller");
+const {
+  createInvitationJoinEvent,
+} = require("../controllers/invitation.controller");
 
 const scheduleSocket = (socket, io) => {
   let count = 0;
@@ -67,7 +70,7 @@ const scheduleSocket = (socket, io) => {
       socket.join(room);
       console.log(`User ${socket.userName} join to ${room}`);
       const u = getUserInRoom(socket._id, room);
-      console.log(u.length);
+      console.log(u);
       if (u.length === 0) {
         const { error, user } = addUser({
           id: socket.id,
@@ -168,12 +171,12 @@ const scheduleSocket = (socket, io) => {
 
     socket.on("attend-event", ({ users, event }) => {
       users.map(async (user) => {
-        const notify = await createNotifyInvitedJoinEvent(
-          socket._id,
-          user,
-          event
-        );
-        const us = getUser(notify.idUser.toString());
+        const notify = await createInvitation({
+          eventId: event,
+          senderId: socket._id,
+          receiverId: user,
+        });
+        const us = getUser(user);
         if (us) {
           io.sockets
             .to(us.id)
