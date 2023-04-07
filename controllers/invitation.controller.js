@@ -2,36 +2,16 @@ const calendarModel = require("../models/calendar.model");
 const EventModel = require("../models/event.model");
 const InvitationModel = require("../models/invitation.model");
 const UserModel = require("../models/user.model");
+const {
+  acceptInvitation,
+  createInvitationService,
+} = require("../services/invitation.service");
 
 const invitationController = {
   createInvitation: async (data) => {
-    const { calendarId, senderId, eventId, receiverId } = data;
-    const user = await UserModel.findById(senderId);
-
-    if (calendarId) {
-      const owner = await calendarModel.findById(calendarId);
-    } else {
-      const owner = await EventModel.findById(eventId);
-    }
-    const handleCheckMsg = () => {
-      return user._id.toString() ===
-        (calendarId ? owner.ownerId.toString() : owner.createdBy.toString())
-        ? "their"
-        : `${user.userName}'s`;
-    };
-    const msg = `${user.userName} invited you to ${handleCheckMsg()} ${
-      calendarId ? "calendar" : "event"
-    }`;
-
-    const newData = { ...data, msg };
-
     try {
-      const invitation = InvitationModel(newData);
-      await invitation.save();
-      const invitationPopulate = await InvitationModel.findById(
-        invitation._id
-      ).populate("senderId");
-      return invitationPopulate;
+      const invitation = await createInvitationService(data);
+      return invitation;
     } catch (error) {
       console.log(error);
       return null;
@@ -42,7 +22,9 @@ const invitationController = {
     try {
       const invitations = await InvitationModel.find({
         receiverId: id,
-      }).populate("senderId");
+      })
+        .populate("senderId")
+        .sort({ created_at: -1 });
 
       return res.status(200).json({ success: true, invitations });
     } catch (error) {
@@ -51,15 +33,7 @@ const invitationController = {
   },
   changeStatusInvitation: async (id, isAction, seen) => {
     try {
-      const invitation = await InvitationModel.findByIdAndUpdate(
-        id,
-        {
-          status: 1,
-          isAction,
-          seen,
-        },
-        { new: true }
-      ).populate("senderId");
+      const invitation = await acceptInvitation(id);
       return invitation;
     } catch (error) {
       return false;
@@ -71,7 +45,7 @@ const invitationController = {
       await invitation.save();
       const invitationPopulate = await InvitationModel.findById(
         invitation._id
-      ).populate("senderId");
+      ).populate("senderId eventId");
       await invitation.save();
       return invitationPopulate;
     } catch (error) {
@@ -107,28 +81,6 @@ const invitationController = {
       return res.status(400).json({ success: false });
     }
   },
-  createInvitationJoinEvent: async (data) => {
-    const { eventId, senderId, receiverId } = data;
-    const user = await UserModel.findById(senderId);
-    const owner = await EventModel.findById(eventId);
-    const handleCheckMsg = () => {
-      return user._id.toString() === owner.createdBy.toString()
-        ? "their"
-        : `${user.userName}'s`;
-    };
-    const msg = `${user.userName} invited you to ${handleCheckMsg()} event`;
-    const newData = { ...data, msg };
-    try {
-      const invitation = InvitationModel(newData);
-      await invitation.save();
-      const invitationPopulate = await InvitationModel.findById(
-        invitation._id
-      ).populate("senderId");
-      return invitationPopulate;
-    } catch (error) {
-      console.log(error);
-      return null;
-    }
-  },
+  createInvitationAcceptJoinEvent: async () => {},
 };
 module.exports = invitationController;

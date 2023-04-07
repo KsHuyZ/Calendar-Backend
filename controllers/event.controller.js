@@ -1,6 +1,7 @@
 const EventModel = require("../models/event.model");
 const LocationModel = require("../models/location.model");
 const { createLocation } = require("./locationController");
+const { getEventbyCalendarIdService } = require("../services/event.service");
 
 const eventController = {
   createEvent: async (event) => {
@@ -92,6 +93,17 @@ const eventController = {
       return res.status(200).json({ success: true });
     } catch (error) {
       return res.status(400).json({ success: false });
+    }
+  },
+  getEventbyCalendarId: async (req, res) => {
+    const { id, year } = req.params;
+    const currentYear = Number(year);
+    try {
+      const events = await getEventbyCalendarIdService(id, currentYear);
+      return res.status(200).json({ success: true, events });
+    } catch (error) {
+      console.log(error);
+      return res.status(400).json({ success: false, events: [] });
     }
   },
 };

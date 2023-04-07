@@ -21,11 +21,14 @@ const {
   createNotifyInvitedJoinEvent,
 } = require("../controllers/notifyController");
 const InvitationModel = require("../models/invitation.model");
-const invitationController = require("../controllers/invitation.controller");
+const { createInvitation } = require("../controllers/invitation.controller");
 const calendarUserController = require("../controllers/calendarUser.controller");
 const {
   createInvitationJoinEvent,
 } = require("../controllers/invitation.controller");
+const {
+  createEventAttentees,
+} = require("../controllers/eventAttentee.controller");
 
 const scheduleSocket = (socket, io) => {
   let count = 0;
@@ -41,7 +44,7 @@ const scheduleSocket = (socket, io) => {
     ) => {
       try {
         console.log(socket._id);
-        const invitation = await invitationController.createInvitation({
+        const invitation = await createInvitation({
           calendarId: room,
           senderId: socket._id,
           receiverId: userId,
@@ -60,8 +63,15 @@ const scheduleSocket = (socket, io) => {
         return false;
       }
     };
-
-    console.log("join-schedule", count++);
+    const handleInvitedJoinEvent = async ({ eventId, receiverId }) => {
+      const notify = await createInvitation({
+        eventId,
+        senderId: socket._id,
+        receiverId,
+      });
+      createEventAttentees(eventId, receiverId);
+      return notify;
+    };
     let rooms = [];
     for (const room of socket.rooms) {
       rooms.push(room);
@@ -70,7 +80,6 @@ const scheduleSocket = (socket, io) => {
       socket.join(room);
       console.log(`User ${socket.userName} join to ${room}`);
       const u = getUserInRoom(socket._id, room);
-      console.log(u);
       if (u.length === 0) {
         const { error, user } = addUser({
           id: socket.id,
@@ -171,10 +180,10 @@ const scheduleSocket = (socket, io) => {
 
     socket.on("attend-event", ({ users, event }) => {
       users.map(async (user) => {
-        const notify = await createInvitation({
+        const notify = await handleInvitedJoinEvent({
+          receiverId: user,
           eventId: event,
           senderId: socket._id,
-          receiverId: user,
         });
         const us = getUser(user);
         if (us) {

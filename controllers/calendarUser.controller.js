@@ -1,5 +1,8 @@
 const calendarUserModel = require("../models/calendarUser.model");
-
+const {
+  createCalendarUserService,
+  acceptedJoinCalendarService,
+} = require("../services/calendarUser.service");
 const calendarUserController = {
   createCalendarUser: async (
     userId,
@@ -9,16 +12,15 @@ const calendarUserController = {
     canShare,
     accepted
   ) => {
-    const calendarUser = calendarUserModel({
-      userId,
-      calendarId,
-      canView,
-      canEdit,
-      canShare,
-      accepted,
-    });
     try {
-      await calendarUser.save();
+      const calendarUser = await createCalendarUserService(
+        userId,
+        calendarId,
+        canView,
+        canEdit,
+        canShare,
+        accepted
+      );
       return calendarUser;
     } catch (error) {
       console.log(error);
@@ -27,12 +29,7 @@ const calendarUserController = {
   },
   acceptedJoinCalendar: async (calendarId, accepted) => {
     try {
-      const calendar = await calendarUserModel.findOneAndUpdate(
-        { calendarId },
-        {
-          accepted,
-        }
-      );
+      const calendar = await acceptedJoinCalendarService(calendarId, accepted);
       return calendar;
     } catch (error) {
       console.log(error);

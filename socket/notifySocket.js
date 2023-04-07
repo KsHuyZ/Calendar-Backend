@@ -1,5 +1,3 @@
-const { acceptJointoSchedule } = require("../controllers/scheduleController");
-const { createNotifyAccepted } = require("../controllers/notifyController");
 const { getUser } = require("../data/users");
 const {
   changeStatusInvitation,
@@ -10,6 +8,10 @@ const {
   acceptedJoinCalendar,
 } = require("../controllers/calendarUser.controller");
 const InvitationModel = require("../models/invitation.model");
+
+const {
+  acceptJoinEventAttentee,
+} = require("../controllers/eventAttentee.controller");
 
 const notifySocket = (socket, io) => {
   const handleAcceptJoinCalendar = async (
@@ -70,5 +72,34 @@ const notifySocket = (socket, io) => {
       console.log("2", error);
     }
   });
+  socket.on(
+    "accept-join-event",
+    async ({ eventId, invitationId, receiverId }) => {
+      const eventAttentee = await acceptJoinEventAttentee(eventId);
+      const invitation = await changeStatusInvitation(invitationId, true, true);
+      socket.emit("accept-success", invitation);
+      const invitationAcp = await createInvitationAccepted({
+        eventId,
+        senderId: socket._id,
+        receiverId,
+        status: -1,
+        msg: `${socket.userName} accepted your invite`,
+      });
+      const user = getUser(receiverId);
+      if (user) {
+        io.sockets
+          .to(user.id)
+          .emit("new-notify", invitationAcp, function (err, success) {
+            console.log(err);
+            console.log(success);
+          });
+      }
+      const room = eventAttentee.eventId.calendarId.toString();
+      io.to(room).emit("user-join-event", {
+        user: eventAttentee.userId,
+        eventId: eventAttentee.eventId._id,
+      });
+    }
+  );
 };
 module.exports = notifySocket;

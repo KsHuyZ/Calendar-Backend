@@ -45,11 +45,11 @@ const socket = (server) => {
     notifySocket(socket, io);
     socket.on("disconnect", () => {
       const user = getUser(socket.id);
+      removeUser(socket.id);
+      console.log(`User ${socket.userName} is disconnect`);
       if (user) {
-        removeUser(socket.id);
         const users = getUsersInRoom(user.room);
         io.to(user.room).emit("new-user-join", users);
-        console.log(`User ${socket.userName} is disconnect`);
       }
     });
   });

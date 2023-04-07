@@ -5,6 +5,15 @@ const eventAttendees = mongoose.Schema({
     type: mongoose.SchemaTypes.ObjectId,
     ref: "Event",
   },
-  userId: mongoose.SchemaTypes.ObjectId,
-  ref:"User"
+  userId: {
+    type: mongoose.SchemaTypes.ObjectId,
+    ref: "User",
+  },
+  accepted: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+const EventAttenteesModel = mongoose.model("EventAttentee", eventAttendees);
+module.exports = EventAttenteesModel;
