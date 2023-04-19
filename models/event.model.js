@@ -13,6 +13,14 @@ const eventSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    file: {
+      fileName: {
+        type: String,
+      },
+      fileUrl: {
+        type: String,
+      },
+    },
     isHoliday: {
       type: Boolean,
       default: false,
@@ -38,6 +46,10 @@ const eventSchema = mongoose.Schema(
       type: mongoose.SchemaTypes.ObjectId,
       required: true,
       ref: "Calendar",
+    },
+    isMeeting: {
+      type: Boolean,
+      default: false,
     },
   },
   {

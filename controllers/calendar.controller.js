@@ -18,6 +18,5 @@ const calendarController = {
       return res.status(400).json({ success: false });
     }
   },
- 
 };
 module.exports = calendarController;

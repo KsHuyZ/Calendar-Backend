@@ -2,6 +2,7 @@ const EventModel = require("../models/event.model");
 const LocationModel = require("../models/location.model");
 const { createLocation } = require("./locationController");
 const { getEventbyCalendarIdService } = require("../services/event.service");
+const { cloudinary } = require("../config/cloudinary");
 
 const eventController = {
   createEvent: async (event) => {
@@ -12,15 +13,15 @@ const eventController = {
       description,
       start,
       end,
+      file,
       location,
       createdBy,
+      isMeeting,
     } = event;
 
     try {
-      const { address, latitude, longitude } = location;
-
+      // const { address, latitude, longitude } = location;
       const locaId = await createLocation(location);
-
       const event = new EventModel({
         title,
         calendarId,
@@ -30,6 +31,8 @@ const eventController = {
         end,
         location: locaId,
         createdBy,
+        file: file,
+        isMeeting,
       });
 
       await event.save();

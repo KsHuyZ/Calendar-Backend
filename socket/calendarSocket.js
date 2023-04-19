@@ -102,6 +102,8 @@ const scheduleSocket = (socket, io) => {
         end,
         location,
         calendarId,
+        file,
+        isMeeting,
       } = data;
       const event = {
         title,
@@ -110,13 +112,13 @@ const scheduleSocket = (socket, io) => {
         start,
         end,
         location,
+        file,
         calendarId,
         createdBy: socket._id,
+        isMeeting,
       };
-      console.log("create-event-commmmme", socket.id);
       const res = await createEvent(event);
       if (res.success) {
-        console.log("time for firedddd", socket.id);
         socket.emit("create-success", res.event);
         socket.broadcast.to(room).emit("new-event", res.event);
       } else {
