@@ -7,11 +7,12 @@ const {
   userJointoEvent,
   getEventbyCalendarId,
 } = require("../controllers/event.controller");
+const authJWT = require("../middlewares/firebaseMiddlwares");
 
 router.post("/create-event", createEvent);
 router.post("/update-time-event", updateTimeEvent);
 router.post("/:id", userJointoEvent);
 router.delete("/:id", deleteEvent);
 router.get("/:id", getEventbyId);
-router.get("/:id/:year", getEventbyCalendarId);
+router.get("/:id/:year", authJWT, getEventbyCalendarId);
 module.exports = router;

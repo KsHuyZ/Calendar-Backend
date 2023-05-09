@@ -1,9 +1,6 @@
 const mongoose = require("mongoose");
 
 const userSchema = mongoose.Schema({
-  uid: {
-    type: String,
-  },
   userName: {
     type: String,
     required: true,
@@ -18,6 +15,17 @@ const userSchema = mongoose.Schema({
   photoURL: {
     type: String,
     required: true,
+  },
+  phoneNumber: {
+    type: String,
+    // required: true,
+  },
+  isActive: {
+    type: Boolean,
+    default: false,
+  },
+  refreshToken: {
+    type: String,
   },
 });
 const UserModel = mongoose.model("User", userSchema);

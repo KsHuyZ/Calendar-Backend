@@ -12,20 +12,27 @@ const socket = (server) => {
   });
 
   io.on("connection", (socket) => {
-    socket.auth = false;
-    socket.on("authenticate", function (data) {
-      // check data được send tới client
-      // console.log(data);
-      getAuth()
-        .verifyIdToken(data.token)
-        .then((decodedToken) => {
-          // console.log(decodedToken);
-          socket.auth = true;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+    socket.once("create-user", ({ id, userName, photoURL }) => {
+      socket._id = id;
+      socket.userName = userName;
+      socket.photoURL = photoURL;
     });
+
+    scheduleSocket(socket, io);
+    // socket.auth = false;
+    // socket.on("authenticate", function (data) {
+    //   // check data được send tới client
+    //   // console.log(data);
+    //   getAuth()
+    //     .verifyIdToken(data.token)
+    //     .then((decodedToken) => {
+    //       // console.log(decodedToken);
+    //       socket.auth = true;
+    //     })
+    //     .catch((error) => {
+    //       console.log(error);
+    //     });
+    // });
 
     // setTimeout(function () {
     //   //sau 1s mà client vẫn chưa dc auth, lúc đấy chúng ta mới disconnect.
@@ -35,13 +42,6 @@ const socket = (server) => {
     //   }
     // }, 1000);
 
-    socket.once("create-user", ({ id, userName, photoURL }) => {
-      socket._id = id;
-      socket.userName = userName;
-      socket.photoURL = photoURL;
-    });
-
-    scheduleSocket(socket, io);
     notifySocket(socket, io);
     socket.on("disconnect", () => {
       const user = getUser(socket.id);

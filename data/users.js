@@ -24,6 +24,11 @@ const removeUser = (id) => {
   }
 };
 
+const getRoombyUser = (id) => {
+  const u = users.find((user) => user.id === id);
+  return u?.room;
+};
+
 const getUser = (id) => users.find((user) => user._id === id);
 
 const getUserbyId = (id) => users.find((user) => user.id === id);
@@ -39,4 +44,5 @@ module.exports = {
   getUser,
   getUsersInRoom,
   getUserInRoom,
+  getRoombyUser,
 };

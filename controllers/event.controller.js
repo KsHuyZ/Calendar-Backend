@@ -2,6 +2,7 @@ const EventModel = require("../models/event.model");
 const LocationModel = require("../models/location.model");
 const { createLocation } = require("./locationController");
 const { getEventbyCalendarIdService } = require("../services/event.service");
+const { getUserbyUid } = require("../services/user.service");
 const { cloudinary } = require("../config/cloudinary");
 
 const eventController = {
@@ -100,9 +101,15 @@ const eventController = {
   },
   getEventbyCalendarId: async (req, res) => {
     const { id, year } = req.params;
+    const user = req.user;
+    const { uid } = user;
+    const userId = await getUserbyUid(uid);
     const currentYear = Number(year);
     try {
-      const events = await getEventbyCalendarIdService(id, currentYear);
+      const events = await getEventbyCalendarIdService(id, currentYear, userId);
+      if (!events) {
+        return res.status(202).json({ success: false, msg: "Not_permisson" });
+      }
       return res.status(200).json({ success: true, events });
     } catch (error) {
       console.log(error);

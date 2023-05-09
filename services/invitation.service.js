@@ -1,7 +1,7 @@
 const calendarModel = require("../models/calendar.model");
 const EventModel = require("../models/event.model");
 const InvitationModel = require("../models/invitation.model");
-
+const UserModel = require("../models/user.model");
 const invitationServices = {
   createInvitationService: async (data) => {
     const { calendarId, senderId, eventId, receiverId } = data;

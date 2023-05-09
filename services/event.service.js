@@ -1,9 +1,29 @@
 const { default: mongoose } = require("mongoose");
 const Event = require("../models/event.model");
+const { getMyCalendar } = require("./calendar.service");
 
 const eventService = {
-  getEventbyCalendarIdService: async (id, currentYear) => {
+  getEventbyCalendarIdService: async (id, currentYear, user) => {
+    const calendar = await getMyCalendar(user._id, id);
+    console.log("calendar", calendar);
+    if (!calendar) return false;
     const events = await Event.aggregate([
+      {
+        $lookup: {
+          from: "calendars",
+          localField: "calendarId",
+          foreignField: "_id",
+          as: "calendar",
+        },
+      },
+      {
+        $lookup: {
+          from: "calendarusers",
+          localField: "calendarId",
+          foreignField: "calendarId",
+          as: "calendarUser",
+        },
+      },
       {
         $match: {
           calendarId: mongoose.Types.ObjectId(id),

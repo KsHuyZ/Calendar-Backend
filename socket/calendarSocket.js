@@ -9,31 +9,22 @@ const {
   getUser,
   getUsersInRoom,
   getUserInRoom,
+  getRoombyUser,
 } = require("../data/users");
 
-const {
-  userJointoSchedule,
-  acceptJointoSchedule,
-} = require("../controllers/scheduleController");
-
-const {
-  getNotifybyIdAndSeen,
-  createNotifyInvitedJoinEvent,
-} = require("../controllers/notifyController");
-const InvitationModel = require("../models/invitation.model");
 const { createInvitation } = require("../controllers/invitation.controller");
 const calendarUserController = require("../controllers/calendarUser.controller");
-const {
-  createInvitationJoinEvent,
-} = require("../controllers/invitation.controller");
 const {
   createEventAttentees,
 } = require("../controllers/eventAttentee.controller");
 
 const scheduleSocket = (socket, io) => {
-  let count = 0;
-
-  socket.once("join-schedule", (room) => {
+  let oldRoom;
+  socket.on("join-schedule", (room) => {
+    socket.room = room;
+    if (oldRoom) {
+      socket.leave(oldRoom);
+    }
     const handleListenInvited = async (
       userId,
       calendarId,
@@ -72,59 +63,29 @@ const scheduleSocket = (socket, io) => {
       createEventAttentees(eventId, receiverId);
       return notify;
     };
-    let rooms = [];
-    for (const room of socket.rooms) {
-      rooms.push(room);
+    // const roomuser = getRoombyUser(socket.id);
+    // if (roomuser) {
+    //   try {
+    //     socket.leave(roomuser);
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // }
+    socket.join(room);
+    oldRoom = room;
+    console.log(`User ${socket.userName} join to ${room}`);
+    const u = getUserInRoom(socket._id, room);
+    if (u.length === 0) {
+      const { error, user } = addUser({
+        id: socket.id,
+        _id: socket._id,
+        displayName: socket.userName,
+        photoURL: socket.photoURL,
+        room,
+      });
+      const users = getUsersInRoom(room);
+      io.to(room).emit("new-user-join", users);
     }
-    if (!rooms.includes(room)) {
-      socket.join(room);
-      console.log(`User ${socket.userName} join to ${room}`);
-      const u = getUserInRoom(socket._id, room);
-      if (u.length === 0) {
-        const { error, user } = addUser({
-          id: socket.id,
-          _id: socket._id,
-          displayName: socket.userName,
-          photoURL: socket.photoURL,
-          room,
-        });
-        const users = getUsersInRoom(room);
-        io.to(room).emit("new-user-join", users);
-      }
-    }
-
-    socket.on("create-event", async (data) => {
-      const {
-        title,
-        backgroundColor,
-        description,
-        start,
-        end,
-        location,
-        calendarId,
-        file,
-        isMeeting,
-      } = data;
-      const event = {
-        title,
-        backgroundColor,
-        description,
-        start,
-        end,
-        location,
-        file,
-        calendarId,
-        createdBy: socket._id,
-        isMeeting,
-      };
-      const res = await createEvent(event);
-      if (res.success) {
-        socket.emit("create-success", res.event);
-        socket.broadcast.to(room).emit("new-event", res.event);
-      } else {
-        socket.emit("remove-event-error");
-      }
-    });
 
     socket.on("delete-event", async ({ idEvent }) => {
       try {
@@ -198,6 +159,40 @@ const scheduleSocket = (socket, io) => {
         }
       });
     });
+  });
+
+  socket.on("create-event", async (data) => {
+    const {
+      title,
+      backgroundColor,
+      description,
+      start,
+      end,
+      location,
+      calendarId,
+      file,
+      isMeeting,
+    } = data;
+    const event = {
+      title,
+      backgroundColor,
+      description,
+      start,
+      end,
+      location,
+      file,
+      calendarId,
+      createdBy: socket._id,
+      isMeeting,
+    };
+    const res = await createEvent(event);
+    if (res.success) {
+      socket.emit("create-success", res.event);
+      // console.log("gửi tới phòng: ", room);
+      socket.broadcast.to(socket.room).emit("new-event", res.event);
+    } else {
+      socket.emit("remove-event-error");
+    }
   });
 };
 module.exports = scheduleSocket;

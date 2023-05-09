@@ -1,5 +1,5 @@
 const calendarModel = require("../models/calendar.model");
-
+const calendarUserModel = require("../models/calendarUser.model");
 const calendarServices = {
   createCalendarServices: async ({
     calendarName,
@@ -16,6 +16,26 @@ const calendarServices = {
     await calendar.save();
     return calendar;
   },
+  getMyCalendar: async (id, calendarId) => {
+    const calendar = await calendarModel.findOne({
+      _id: calendarId,
+      ownerId: id,
+    });
+    console.log("calendar:",calendar);
+    if (calendar) {
+      return true;
+    } else {
+      const calendarExist = await calendarUserModel.findOne({
+        userId: id,
+        calendarId,
+      });
+      console.log("calendarExist:",calendarExist);
+      if (calendarExist) {
+        return true;
+      }
+      return false;
+    }
+  },
 };
 
-module.exports = calendarServices
+module.exports = calendarServices;
