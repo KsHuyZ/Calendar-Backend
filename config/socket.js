@@ -6,7 +6,7 @@ const { getAuth } = require("firebase-admin/auth");
 const socket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: "*",
       methods: ["POST", "GET", "DELETE", "PUT"],
     },
   });
