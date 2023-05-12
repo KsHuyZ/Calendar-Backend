@@ -21,6 +21,7 @@ const userController = {
           email,
           userName: displayName,
           photoURL,
+          isActive: true,
         });
         const { accessToken, refreshToken } = generateToken(newUser);
 

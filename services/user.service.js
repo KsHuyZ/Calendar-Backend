@@ -33,6 +33,10 @@ const userService = {
     if (!existEmail.isActive) return "Pls_active_acc";
     return existEmail;
   },
+  getUserbyId: async (id) => {
+    const user = await UserModel.findById(id);
+    return user;
+  },
 };
 
 module.exports = userService;
