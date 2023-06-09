@@ -3,7 +3,6 @@ const LocationModel = require("../models/location.model");
 const { createLocation } = require("./locationController");
 const { getEventbyCalendarIdService } = require("../services/event.service");
 const { getUserbyUid } = require("../services/user.service");
-const { cloudinary } = require("../config/cloudinary");
 
 const eventController = {
   createEvent: async (event) => {
@@ -83,7 +82,6 @@ const eventController = {
   userJointoEvent: async (req, res) => {
     const id = req.params.id;
     const { idUser, idNotify } = req.body;
-    console.log(id, idUser);
     try {
       const event = await EventModel.findById(id);
       let users = event.userJoin;
@@ -100,10 +98,7 @@ const eventController = {
     }
   },
   getEventbyCalendarId: async (req, res) => {
-    const { id, year } = req.params;
-    const user = req.user;
-    const { uid } = user;
-    const userId = await getUserbyUid(uid);
+    const { id, year, userId } = req.params;
     const currentYear = Number(year);
     try {
       const events = await getEventbyCalendarIdService(id, currentYear, userId);

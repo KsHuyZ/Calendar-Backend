@@ -1,4 +1,4 @@
-const calendarUserModel = require("../models/calendarUser.model");
+
 const {
   createCalendarUserService,
   acceptedJoinCalendarService,

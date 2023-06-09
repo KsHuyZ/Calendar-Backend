@@ -3,9 +3,9 @@ const Event = require("../models/event.model");
 const { getMyCalendar } = require("./calendar.service");
 
 const eventService = {
-  getEventbyCalendarIdService: async (id, currentYear, user) => {
-    const calendar = await getMyCalendar(user._id, id);
-    console.log("calendar", calendar);
+  getEventbyCalendarIdService: async (id, currentYear, userId) => {
+   
+    const calendar = await getMyCalendar(userId, id);
     if (!calendar) return false;
     const events = await Event.aggregate([
       {

@@ -14,5 +14,5 @@ router.post("/update-time-event", updateTimeEvent);
 router.post("/:id", userJointoEvent);
 router.delete("/:id", deleteEvent);
 router.get("/:id", getEventbyId);
-router.get("/:id/:year", authJWT, getEventbyCalendarId);
+router.get("/:id/:userId/:year", authJWT, getEventbyCalendarId);
 module.exports = router;

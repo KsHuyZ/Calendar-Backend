@@ -26,16 +26,5 @@ const decodeTokenWithExp = (token) => {
     return null;
   }
 };
-// Sử dụng hàm verifyToken để giải mã token
-// verifyToken(firebaseToken)
-//   .then((result) => {
-//     if (result.type === "firebase") {
-//       console.log("Đây là token của Firebase, UID = " + result.uid);
-//     } else {
-//       console.log("Đây là JWT, User ID = " + result.userId);
-//     }
-//   })
-//   .catch((err) => {
-//     console.error("Lỗi giải mã token: ", err);
-//   });
+
 module.exports = { generateToken, decodeToken, decodeTokenWithExp };

@@ -1,7 +1,4 @@
-const calendarModel = require("../models/calendar.model");
-const EventModel = require("../models/event.model");
 const InvitationModel = require("../models/invitation.model");
-const UserModel = require("../models/user.model");
 const {
   acceptInvitation,
   createInvitationService,

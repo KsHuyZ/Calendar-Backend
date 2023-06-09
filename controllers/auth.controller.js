@@ -8,7 +8,6 @@ const bcrypt = require("bcrypt");
 const authController = {
   refreshToken: async (req, res) => {
     const authorization = req.headers.authorization;
-    console.log(authorization);
     if (!authorization)
       return res.status(400).json({ success: false, msg: "pls_provide_token" });
     const accessToken = authorization.split(" ")[1];

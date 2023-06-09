@@ -21,7 +21,6 @@ const calendarServices = {
       _id: calendarId,
       ownerId: id,
     });
-    console.log("calendar:",calendar);
     if (calendar) {
       return true;
     } else {
@@ -29,7 +28,6 @@ const calendarServices = {
         userId: id,
         calendarId,
       });
-      console.log("calendarExist:",calendarExist);
       if (calendarExist) {
         return true;
       }
