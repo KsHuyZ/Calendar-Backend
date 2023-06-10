@@ -132,11 +132,12 @@ const userController = {
       photoURL,
       phoneNumber
     );
+    var fullUrl = req.protocol + "://" + req.get("host");
     if (user === "user_exist") return res.status(400).json({ msg: user });
     const htmlForm = `<div>
     <h1>Welcome to My Schedule!</h1>
 	<p>Thank you for joining our website. We are excited to have you on board!</p>
-  <a href="http://localhost:4000/user/active/${user._id}">Active account</a>
+  <a href="${fullUrl}/user/active/${user._id}">Active account</a>
     </div>`;
     sendMail(
       email,
